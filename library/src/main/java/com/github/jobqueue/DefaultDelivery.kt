@@ -17,7 +17,7 @@ class DefaultDelivery<T : Job<T>> : Delivery<T> {
         mResponsePoster = executor
     }
 
-    override fun deliveryPrepare(listeners: List<JobHandlerListener<T>?>?, job: T) {
+    override fun deliveryPrepare(listeners: List<JobHandlerListener<T>?>, job: T) {
         mResponsePoster.execute(Runnable {
             if (job.isCancel) {
                 CLog.e("job is cancel when deliveryPrepare")
@@ -26,28 +26,28 @@ class DefaultDelivery<T : Job<T>> : Delivery<T> {
             }
             CLog.d("deliveryPrepare,current thread:%s", Thread.currentThread().name)
             var i = 0
-            val size = listeners!!.size
+            val size = listeners.size
             while (i < size) {
-                listeners[i]!!.onPrepare(job)
+                listeners[i]?.onPrepare(job)
 
                 i++
             }
         })
     }
 
-    override fun deliveryCancel(listeners: List<JobHandlerListener<T>?>?, job: T) {
+    override fun deliveryCancel(listeners: List<JobHandlerListener<T>?>, job: T) {
         mResponsePoster.execute {
             CLog.d("deliveryCancel,current thread:%s", Thread.currentThread().name)
             var i = 0
-            val size = listeners!!.size
+            val size = listeners.size
             while (i < size) {
-                listeners[i]!!.onCancel(job)
+                listeners[i]?.onCancel(job)
                 i++
             }
         }
     }
 
-    override fun deliveryFinish(listeners: List<JobHandlerListener<T>?>?, job: T) {
+    override fun deliveryFinish(listeners: List<JobHandlerListener<T>?>, job: T) {
         if (job.isCancel) {
             CLog.e("job is cancel when deliveryFinish")
             deliveryCancel(listeners, job)
@@ -57,9 +57,9 @@ class DefaultDelivery<T : Job<T>> : Delivery<T> {
         mResponsePoster.execute {
             CLog.d("deliveryFinish,current thread:%s", Thread.currentThread().name)
             var i = 0
-            val size = listeners!!.size
+            val size = listeners.size
             while (i < size) {
-                listeners[i]!!.onFinish(job)
+                listeners[i]?.onFinish(job)
                 i++
             }
         }
