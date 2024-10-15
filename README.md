@@ -1,6 +1,6 @@
-#JobQueue#
+# JobQueue
 任务队列
-##Support##
+## Support
 
 * 基本的队列与线程配合，形成流水线式处理
 * 优先级，任务处理有先后
@@ -9,7 +9,7 @@
 * 任务取消，需要自由取消已经已经放入队列中的任务与正在执行的任务
 * 重复任务过滤，后续重复任务进入等待队列等待，直至当前任务执行完毕后释放队列，并按序列执行
 
-##Usage##
+## Usage
 ###1.初始化一个处理器###
 
 ```kotlin
@@ -19,7 +19,7 @@ mCacheJobHandler = JobHandler.Builder<TestJob>()
         .build()
 ```
 
-###2.定义一个任务###
+### 2.定义一个任务
 
 继承`Job<T>`复写`getRepeatFilterKey()`函数
 
@@ -37,7 +37,7 @@ class TestJob : Job<TestJob>() {
         get() = count
     }
 ```
-###3.任务进入队列执行###
+### 3.任务进入队列执行
 
 ```kotlin
 mCacheJobHandler?.enqueue(testJob)
@@ -45,8 +45,8 @@ mCacheJobHandler?.enqueue(testJob)
                 ?.addListener(mCacheJobHandlerListener)
 ```
 ---
-##其他用法##
-###优先级###
+## 其他用法
+### 优先级
 
 分四档，优先级越高，执行越靠前
 
@@ -54,7 +54,7 @@ mCacheJobHandler?.enqueue(testJob)
 testJob.priority(Priority.HIGH)
 ```
 
-###拦截器###
+### 拦截器
 
 ```kotlin
 class CacheJobInterceptor : Interceptor<TestJob> {
@@ -73,7 +73,7 @@ class CacheJobInterceptor : Interceptor<TestJob> {
     }
 }
 ```
-###取消任务###
+### 取消任务
 
 ```kotlin
 mCacheJobHandler.cancelAll(tag)
