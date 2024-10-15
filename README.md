@@ -10,7 +10,7 @@
 * 重复任务过滤，后续重复任务进入等待队列等待，直至当前任务执行完毕后释放队列，并按序列执行
 
 ## Usage
-###1.初始化一个处理器###
+### 1.初始化一个处理器
 
 ```kotlin
 mCacheJobHandler = JobHandler.Builder<TestJob>()
