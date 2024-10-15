@@ -1,4 +1,4 @@
-package net.robinx.queue;
+package com.github.jobqueue;
 
 import android.text.TextUtils;
 import android.util.Log;

@@ -2,9 +2,15 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/JobQueue.iml" filepath="$PROJECT_DIR$/JobQueue.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/library/library.iml" filepath="$PROJECT_DIR$/library/library.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/JobQueue.iml" filepath="$PROJECT_DIR$/.idea/modules/JobQueue.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/JobQueue.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/JobQueue.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/JobQueue.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/JobQueue.app.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/JobQueue.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/JobQueue.app.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/JobQueue.app.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/JobQueue.app.unitTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/library/JobQueue.library.iml" filepath="$PROJECT_DIR$/.idea/modules/library/JobQueue.library.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/library/JobQueue.library.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/library/JobQueue.library.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/library/JobQueue.library.main.iml" filepath="$PROJECT_DIR$/.idea/modules/library/JobQueue.library.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/library/JobQueue.library.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/library/JobQueue.library.unitTest.iml" />
     </modules>
   </component>
 </project>

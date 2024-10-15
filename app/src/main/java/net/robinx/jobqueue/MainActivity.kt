@@ -1,177 +1,166 @@
-package net.robinx.jobqueue;
+package net.robinx.jobqueue
 
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.view.View;
+import android.os.Bundle
+import android.view.View
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import com.github.jobqueue.Action
+import com.github.jobqueue.CLog
+import com.github.jobqueue.Interceptor
+import com.github.jobqueue.Job
+import com.github.jobqueue.JobHandler
+import com.github.jobqueue.JobHandlerListener
+import com.github.jobqueue.Priority
 
-import net.robinx.queue.Action;
-import net.robinx.queue.CLog;
-import net.robinx.queue.JobHandler;
-import net.robinx.queue.Priority;
-import net.robinx.queue.JobHandlerListener;
+class MainActivity : AppCompatActivity() {
+    private var mCount = 0
 
-public class MainActivity extends AppCompatActivity {
+    private var mCacheJobHandler: JobHandler<TestJob>? = null
+    private var mNetworkJobHandler: JobHandler<TestJob>? = null
 
-    private int mCount;
+    private var tvTaskState: TextView? = null
 
-    private JobHandler<TestJob> mCacheJobHandler;
-    private JobHandler<TestJob> mNetworkJobHandler;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        CLog.allowD = false;
-
-        mCacheJobHandler = new JobHandler.Builder<TestJob>()
-                .threadPoolSize(1)
-                .interceptor(new CacheJobInterceptor())
-                .build();
-
-        mNetworkJobHandler = new JobHandler.Builder<TestJob>()
-                .build();
-
-        findViewById(R.id.btn_add_job).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                final TestJob testJob = new TestJob();
-                if (mCount == 2) {
-                    testJob.priority(Priority.LOW);
-                }
-
-                if (mCount == 3) {
-                    testJob.priority(Priority.NORMAL);
-                }
-
-                if (mCount == 7) {
-                    testJob.priority(Priority.HIGH);
-                }
-
-                if (mCount == 8) {
-                    testJob.priority(Priority.IMMEDIATE);
-                }
-
-                testJob.setCount(mCount);
-                testJob.tag(MainActivity.this);
-
-                mCacheJobHandler.enqueue(testJob)
-                        .action(new Action<TestJob>() {
-                            @Override
-                            public void call(TestJob element) {
-                                try {
-                                    Thread.sleep(1500);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                                CLog.i("读缓存"+element.getCount());
-                            }
-                        })
-                        .addListener(mCacheJobHandlerListener);
-
-                mCount++;
-
+    private val cacheTaskAction = Action<TestJob> { element ->
+            try {
+                Thread.sleep(1500)
+            } catch (e: InterruptedException) {
+                e.printStackTrace()
             }
-        });
-
-        findViewById(R.id.btn_add_repeat_job).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                TestJob testJob = new TestJob();
-                testJob.setCount(mCount-1);
-                testJob.tag(MainActivity.this);
-
-                mCacheJobHandler.enqueue(testJob)
-                        .action(new Action<TestJob>() {
-                            @Override
-                            public void call(TestJob element) {
-                                try {
-                                    Thread.sleep(1500);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                                CLog.i("读缓存"+element.getCount());
-                            }
-                        })
-                        .addListener(mCacheJobHandlerListener);
-
+            CLog.i("执行缓存队列任务" + element.count)
+            runOnUiThread {
+                tvTaskState?.text =
+                    tvTaskState?.text.toString() + "\n" + "执行缓存队列任务" + element.count
             }
-        });
+        }
 
-        findViewById(R.id.btn_cancel_job).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mCacheJobHandler.cancelAll(MainActivity.this);
-                mNetworkJobHandler.cancelAll(MainActivity.this);
+    private val networkTaskAction = Action<TestJob> { element ->
+            try {
+                Thread.sleep(1500)
+            } catch (e: InterruptedException) {
+                e.printStackTrace()
             }
-        });
+            CLog.i("执行网络队列任务" + element.count)
+            runOnUiThread {
+                tvTaskState?.text =
+                    tvTaskState?.text.toString() + "\n" + "执行网络队列任务" + element.count
+            }
+        }
 
+
+    private val mCacheJobHandlerListener: JobHandlerListener<TestJob> =
+        object : JobHandlerListener<TestJob> {
+            override fun onPrepare(job: TestJob) {
+                CLog.i("读缓存准备" + job.count)
+            }
+
+            override fun onCancel(job: TestJob) {
+                CLog.i("读缓存取消" + job.count)
+            }
+
+            override fun onFinish(job: TestJob) {
+                CLog.i("读缓存完成" + job.count)
+            }
+        }
+
+    private val mNetworkJobHandlerListener: JobHandlerListener<TestJob> =
+        object : JobHandlerListener<TestJob> {
+            override fun onPrepare(job: TestJob) {
+                CLog.i("请求网络准备" + job.count)
+            }
+
+            override fun onCancel(job: TestJob) {
+                CLog.i("请求网络取消" + job.count)
+            }
+
+            override fun onFinish(job: TestJob) {
+                CLog.i("请求网络完成" + job.count)
+            }
+        }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        tvTaskState = findViewById(R.id.tv_task_state)
+
+        CLog.allowD = false
+
+        mCacheJobHandler = JobHandler.Builder<TestJob>()
+            .threadPoolSize(1)
+            .interceptor(CacheJobInterceptor())
+            .build()
+
+        mNetworkJobHandler = JobHandler.Builder<TestJob>()
+            .build()
+
+        findViewById<View>(R.id.btn_add_job).setOnClickListener {
+            val testJob = TestJob()
+            if (mCount == 2) {
+                testJob.priority(Priority.LOW)
+            }
+
+            if (mCount == 3) {
+                testJob.priority(Priority.NORMAL)
+            }
+
+            if (mCount == 7) {
+                testJob.priority(Priority.HIGH)
+            }
+
+            if (mCount == 8) {
+                testJob.priority(Priority.IMMEDIATE)
+            }
+
+            testJob.setCount(mCount)
+            testJob.tag(this@MainActivity)
+
+            mCacheJobHandler?.enqueue(testJob)
+                ?.action(cacheTaskAction)
+                ?.addListener(mCacheJobHandlerListener)
+            mCount++
+        }
+
+        findViewById<View>(R.id.btn_add_repeat_job).setOnClickListener {
+            val testJob = TestJob()
+            testJob.setCount(mCount - 1)
+            testJob.tag(this@MainActivity)
+            mCacheJobHandler?.enqueue(testJob)
+                ?.action(cacheTaskAction)
+                ?.addListener(mCacheJobHandlerListener)
+        }
+
+        findViewById<View>(R.id.btn_cancel_job).setOnClickListener {
+            mCacheJobHandler?.cancelAll(this@MainActivity)
+            mNetworkJobHandler?.cancelAll(this@MainActivity)
+        }
     }
 
-    public class CacheJobInterceptor implements net.robinx.queue.Interceptor<TestJob>{
-
-        @Override
-        public boolean interceptCondition(TestJob job) {
-            if (job.getCount() == 5) {
-                return true;
+    inner class CacheJobInterceptor : Interceptor<TestJob> {
+        override fun interceptCondition(job: TestJob): Boolean {
+            if (job.count == 5) {
+                return true
             }
-            return false;
+            return false
         }
 
-        @Override
-        public void onIntercept(final TestJob job) {
-            mNetworkJobHandler.enqueue(job)
-                    .action(new Action<TestJob>() {
-                        @Override
-                        public void call(TestJob element) {
-                            try {
-                                Thread.sleep(1500);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                            CLog.i("请求网络"+element.getCount());
-                        }
-                    })
-                    .addListener(mNetworkJobHandlerListener);
-
+        override fun onIntercept(job: TestJob) {
+            mNetworkJobHandler?.enqueue(job)
+                ?.action(networkTaskAction)
+                ?.addListener(mNetworkJobHandlerListener)
         }
     }
 
-    private JobHandlerListener<TestJob> mCacheJobHandlerListener = new JobHandlerListener<TestJob>() {
-        @Override
-        public void onPrepare(TestJob job) {
-            CLog.i("读缓存准备"+job.getCount());
+    class TestJob : Job<TestJob>() {
+        var count: Int = 0
+            private set
+
+        fun setCount(count: Int): TestJob {
+            this.count = count
+            return this
         }
 
-        @Override
-        public void onCancel(TestJob job) {
-            CLog.i("读缓存取消"+job.getCount());
-        }
-
-        @Override
-        public void onFinish(TestJob job) {
-            CLog.i("读缓存完成"+job.getCount());
-        }
-
-    };
-
-    private JobHandlerListener<TestJob> mNetworkJobHandlerListener = new JobHandlerListener<TestJob>() {
-
-        @Override
-        public void onPrepare(TestJob job) {
-            CLog.i("请求网络准备"+job.getCount());
-        }
-
-        @Override
-        public void onCancel(TestJob job) {
-            CLog.i("请求网络取消"+job.getCount());
-        }
-
-        @Override
-        public void onFinish(TestJob job) {
-            CLog.i("请求网络完成"+job.getCount());
-        }
-
-    };
+        override val repeatFilterKey: Any
+            get() = count
+    }
 
 }

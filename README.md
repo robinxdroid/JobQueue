@@ -1,6 +1,6 @@
-#JobQueue
+#JobQueue#
 任务队列
-##Support
+##Support##
 
 * 基本的队列与线程配合，形成流水线式处理
 * 优先级，任务处理有先后
@@ -9,99 +9,72 @@
 * 任务取消，需要自由取消已经已经放入队列中的任务与正在执行的任务
 * 重复任务过滤，后续重复任务进入等待队列等待，直至当前任务执行完毕后释放队列，并按序列执行
 
-##Usage
-###1.初始化一个处理器
+##Usage##
+###1.初始化一个处理器###
 
-```java
-mCacheJobHandler = new JobHandler.Builder<TestJob>()
-       .threadPoolSize(1) //处理队列对应线程数量
-       .interceptor(new CacheJobInterceptor()) //拦截器，用于拦截当前任务的处理
-       .build();
+```kotlin
+mCacheJobHandler = JobHandler.Builder<TestJob>()
+        .threadPoolSize(1)
+        .interceptor(CacheJobInterceptor())
+        .build()
 ```
 
-###2.定义一个任务
+###2.定义一个任务###
 
 继承`Job<T>`复写`getRepeatFilterKey()`函数
 
-```java
-public class TestJob extends Job<TestJob> {
-    private int mCount;
-
-    public int getCount() {
-        return mCount;
+```kotlin
+class TestJob : Job<TestJob>() {
+        var count: Int = 0
+        private set
+        
+        fun setCount(count: Int): TestJob {
+            this.count = count
+            return this
+        }
+        
+        override val repeatFilterKey: Any
+        get() = count
     }
-
-    public TestJob setCount(int count) {
-        mCount = count;
-        return this;
-    }
-
-    @Override
-    public Object getRepeatFilterKey() {  //重复任务过滤依据
-        return mCount;
-    }
-}
 ```
-###3.任务进入队列执行
+###3.任务进入队列执行###
 
-```java
-			mCacheJobHandler.enqueue(testJob)
-                        .action(new Action<TestJob>() {
-                            @Override
-                            public void call(TestJob element) {
-                                
-                                CLog.i("具体操作");
-                            }
-                        })
-                        .addListener(mCacheJobHandlerListener); //执行进度监听
+```kotlin
+mCacheJobHandler?.enqueue(testJob)
+                ?.action(cacheTaskAction)
+                ?.addListener(mCacheJobHandlerListener)
 ```
 ---
-##其他用法
-###优先级
+##其他用法##
+###优先级###
 
 分四档，优先级越高，执行越靠前
 
-```java
-testJob.priority(Priority.HIGH);
+```kotlin
+testJob.priority(Priority.HIGH)
 ```
 
-###拦截器
+###拦截器###
 
-```java
-public class CacheJobInterceptor implements net.robinx.queue.Interceptor<TestJob>{
-
-        @Override
-        public boolean interceptCondition(TestJob job) { //拦截条件
-            if (job.getCount() == 5) {
-                return true;
-            }
-            return false;
+```kotlin
+class CacheJobInterceptor : Interceptor<TestJob> {
+    override fun interceptCondition(job: TestJob): Boolean {
+        if (job.count == 5) {
+            return true
         }
-
-        @Override
-        public void onIntercept(final TestJob job) {  //拦截后切换到其他队列，根据自己需求做相应动作
-            mNetworkJobHandler.enqueue(job)
-                    .action(new Action<TestJob>() {
-                        @Override
-                        public void call(TestJob element) {
-                            
-                            CLog.i("其他操作");
-                        }
-                    })
-                    .addListener(mNetworkJobHandlerListener);
-
-        }
+        return false
     }
+
+    override fun onIntercept(job: TestJob) {
+        // 拦截后，做一些操作，例如将任务切换到其他队列执行
+        mNetworkJobHandler?.enqueue(job)
+            ?.action(networkTaskAction)
+            ?.addListener(mNetworkJobHandlerListener)
+    }
+}
 ```
-###取消任务
+###取消任务###
 
-```java
-mCacheJobHandler.cancelAll(tag);
+```kotlin
+mCacheJobHandler.cancelAll(tag)
 ```
-
-##更多
-你可以看 [这篇博客](http://robinx.net/2016/12/06/优雅的责任链模式/)
-
-#About me
-Email:735506404@robinx.net<br>
-Blog:[www.robinx.net](http://www.robinx.net)

@@ -1,9 +1,9 @@
-package net.robinx.queue;
+package com.github.jobqueue
 
 /**
  * Created by Robin on 2016/12/5 13:17.
  */
-public enum Priority {
+enum class Priority {
     LOW,
     NORMAL,
     HIGH,
